@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>SmartMoney — Personal Finance Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- Login Screen -->
+  <div id="loginContainer" class="login-container">
+    <div class="login-card">
+      <div class="brand-logo">
+        <span>💸</span>
+        <span>SmartMoney</span>
+      </div>
+      
+      <h1 class="login-title">Welcome to SmartMoney</h1>
+      <p class="login-subtitle">Your personal finance dashboard</p>
+      
+      <form id="loginForm">
+        <div class="form-group">
+          <label for="userName">Full Name</label>
+          <input type="text" id="userName" placeholder="Enter your full name" required>
+        </div>
+        
+        <div class="form-group">
+          <label for="userEmail">Email Address</label>
+          <input type="email" id="userEmail" placeholder="Enter your email" required>
+        </div>
+        
+        <button type="submit" class="login-btn" id="loginBtn">
+          Get Started
+        </button>
+        
+        <div style="text-align:center;margin-top:20px;">
+          <span class="toggle-mode" id="switchUser">Switch User</span>
+        </div>
+      </form>
+      
+      <!-- Existing Users List (shown when switching) -->
+      <div id="usersList" style="display:none;">
+        <h3 style="color:var(--text);margin-bottom:16px;">Select User</h3>
+        <div id="usersContainer"></div>
+        <button type="button" class="login-btn" id="newUserBtn" style="margin-top:16px;">
+          Create New User
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Application -->
+  <div id="app" class="app">
+    <header>
+      <div class="container row" style="align-items:center;justify-content:space-between;">
+        <div class="row" style="align-items:center;gap:12px;">
+          <span class="pill">💸 SmartMoney </span>
+          <strong class="title">Personal Finance Dashboard</strong>
+        </div>
+        
+        <div class="row" style="align-items:center;gap:16px;">
+          <div class="user-info">
+            <span>Welcome,</span>
+            <span class="welcome" id="welcomeUser">User</span>
+          </div>
+          <button class="logout-btn" id="logoutBtn">Logout</button>
+          <nav class="tabs" id="tabs"></nav>
+        </div>
+      </div>
+    </header>
+
+    <main class="container">
+      <!-- Overview -->
+      <section id="overview" class="section active">
+        <div class="grid two">
+          <div class="card p20">
+            <h3>Budget Overview</h3>
+            <div class="grid two">
+              <div>
+                <label>Period</label>
+                <select id="budgetPeriod">
+                  <option>Monthly</option>
+                  <option>Weekly</option>
+                </select>
+              </div>
+              <div>
+                <label>Budget Amount (<span id="baseCurrencyLabel">INR</span>)</label>
+                <input id="budgetAmount" type="number" min="0" placeholder="e.g., 20000" />
+              </div>
+            </div>
+            <div class="spacer"></div>
+            <div class="grid two">
+              <div>
+                <button id="saveBudget">💾 Save Budget</button>
+              </div>
+              <div class="right">
+                <button class="ghost" id="resetBudget">↺ Reset</button>
+              </div>
+            </div>
+            <div class="spacer"></div>
+            <div>
+              <div class="row" style="justify-content:space-between;align-items:center;">
+                <div class="muted">Spent this period</div>
+                <div><strong id="spentAmount">0</strong> / <span id="budgetDisplay">0</span> <span class="badge" id="baseCurrencyBadge">INR</span></div>
+              </div>
+              <div class="progress"><div id="budgetProgress" class="ok" style="width:0%"></div></div>
+            </div>
+          </div>
+
+          <div class="card p20">
+            <h3>Base Currency & Rates</h3>
+            <div class="grid three">
+              <div>
+                <label>Base Currency</label>
+                <select id="baseCurrency">
+                  <option value="INR">INR</option>
+                  <option value="USD">USD</option>
+                  <option value="EUR">EUR</option>
+                  <option value="GBP">GBP</option>
+                  <option value="JPY">JPY</option>
+                </select>
+              </div>
+              <div>
+                <label>Quick Rates (per Base)</label>
+                <div class="row" style="gap:8px;flex-wrap:wrap">
+                  <span class="badge" id="rate1">USD: 0.012</span>
+                  <span class="badge" id="rate2">EUR: 0.011</span>
+                  <span class="badge" id="rate3">GBP: 0.0095</span>
+                </div>
+              </div>
+              <div class="right">
+                <button id="resetRates" class="ghost">↺ Reset Mock Rates</button>
+              </div>
+            </div>
+            <div class="spacer"></div>
+            <details>
+              <summary class="muted">Advanced: Import custom rates (JSON map like {"USD":0.012, ...})</summary>
+              <div class="grid two" style="margin-top:10px">
+                <textarea id="ratesJSON" rows="5" style="width:100%;background:#0f172a;border:1px solid #1f2937;border-radius:12px;padding:10px 12px;color:var(--text)" placeholder='{"USD":0.012,"EUR":0.011,"GBP":0.0095}'></textarea>
+                <div>
+                  <button id="importRates">⬆ Import Rates</button>
+                  <div class="spacer"></div>
+                  <button id="exportData" class="ghost">⬇ Export All Data</button>
+                  <div class="spacer"></div>
+                  <label class="pill" style="cursor:pointer">📂 Import Data JSON <input id="importDataFile" type="file" accept="application/json" style="display:none"></label>
+                </div>
+              </div>
+            </details>
+          </div>
+        </div>
+
+        <div class="grid two" style="margin-top:16px">
+          <div class="card p20">
+            <h3>Spending by Category</h3>
+            <canvas id="pieChart" height="220"></canvas>
+          </div>
+          <div class="card p20">
+            <h3>Monthly Spend (last 6)</h3>
+            <canvas id="barChart" height="220"></canvas>
+          </div>
+        </div>
+      </section>
+
+      <!-- Expenses -->
+      <section id="expenses" class="section">
+        <div class="card p20">
+          <h3>Add Expense</h3>
+          <div class="grid four">
+            <div>
+              <label>Date</label>
+              <input id="expDate" type="date" />
+            </div>
+            <div>
+              <label>Description</label>
+              <input id="expDesc" type="text" placeholder="e.g., Groceries" />
+            </div>
+            <div>
+              <label>Category</label>
+              <select id="expCat">
+                <option>Food</option>
+                <option>Travel</option>
+                <option>Shopping</option>
+                <option>Bills</option>
+                <option>Entertainment</option>
+                <option>Other</option>
+              </select>
+            </div>
+            <div>
+              <label>Amount (<span id="amountCurLabel">INR</span>)</label>
+              <input id="expAmt" type="number" min="0" step="0.01" placeholder="e.g., 500" />
+            </div>
+          </div>
+          <div class="spacer"></div>
+          <div class="grid two">
+            <div>
+              <label>Currency</label>
+              <select id="expCurrency">
+                <option>INR</option>
+                <option>USD</option>
+                <option>EUR</option>
+                <option>GBP</option>
+                <option>JPY</option>
+              </select>
+            </div>
+            <div class="right" style="align-self:end">
+              <button id="addExpense">➕ Add</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="card p20" style="margin-top:16px">
+          <div class="row" style="justify-content:space-between;align-items:center;">
+            <h3>Expense History</h3>
+            <div class="row" style="gap:8px">
+              <input id="search" type="text" placeholder="Search description/category" style="width:260px">
+              <button id="clearAll" class="danger">🗑 Clear All</button>
+            </div>
+          </div>
+          <div class="spacer"></div>
+          <table>
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Description</th>
+                <th>Category</th>
+                <th class="right">Amount</th>
+                <th>Currency</th>
+                <th class="right">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="expTable"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- Converter -->
+      <section id="converter" class="section">
+        <div class="card p20">
+          <h3>Currency Converter</h3>
+          <div class="grid four">
+            <div>
+              <label>Amount</label>
+              <input id="convAmt" type="number" min="0" step="0.01" placeholder="100" />
+            </div>
+            <div>
+              <label>From</label>
+              <select id="convFrom">
+                <option>INR</option><option>USD</option><option>EUR</option><option>GBP</option><option>JPY</option>
+              </select>
+            </div>
+            <div>
+              <label>To</label>
+              <select id="convTo">
+                <option>USD</option><option>INR</option><option>EUR</option><option>GBP</option><option>JPY</option>
+              </select>
+            </div>
+            <div style="align-self:end" class="right">
+              <button id="doConvert">⇄ Convert</button>
+            </div>
+          </div>
+          <div class="spacer"></div>
+          <div class="pill" id="convResult">Result: —</div>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      Built for hackathons · Works offline · Data stays in your browser
+    </footer>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
